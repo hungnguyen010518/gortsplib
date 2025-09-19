@@ -526,25 +526,6 @@ func (callInfo *CallInfo) doOnRadioState(radioButtonState constant.RadioButtonSt
 				}
 
 			} else if (radioButtonState == constant.TX_BUTTON_ON && recorderType == constant.RET_RADIO_TX || radioButtonState == constant.RX_BUTTON_ON && recorderType == constant.RET_RADIO_RX) && (int(rtspState) <= int(constant.RTSP_STATE_START) || rtspState == constant.RTSP_STATE_DISCONNECT || c.client.IsClose()) {
-				if callInfo.checkServerSessionExists(j, &c) {
-					defer once.Do(func() {
-						callInfo.doRecordRTP(false)
-					})
-					if recorderType == constant.RET_RADIO_TX {
-						crd.Operations.PTT.Value = "0"
-					} else {
-						crd.Operations.SQU.Value = "0"
-					}
-					crd.EnablePauseRadio()
-					crd.Properties.DisconnectCause = models.CRDAttribute{Value: strconv.Itoa(int(GetDisconnectCause(crd.Properties.SipDisconnectCause.Value, nil)))}
-					crdByt, _ := xml.MarshalIndent(crd, "", "    ")
-					if err := c.Pause(crd, crdByt); err != nil {
-						rtspClient.LogDebug("name", c.Name, "recorderType:", "channel:", c.ch, "Error sending PAUSE request:", err)
-						c.CloseByErr()
-						return
-					}
-					return
-				}
 				defer once.Do(func() {
 					callInfo.doRecordRTP(true)
 				})
@@ -1027,17 +1008,6 @@ func (callInfo *CallInfo) cleanupResources() {
 	rtspClient.LogDebug("Cleanup completed for call name:", callInfo.Name)
 }
 
-func (callInfo *CallInfo) checkServerSessionExists(channelIndex int, client *Client) bool {
-	rtspClient := GetRTSPClient()
-	
-	if client.client != nil && !client.client.IsClose() {
-		if callInfo.RecorderType == constant.RET_RADIO_TX || callInfo.RecorderType == constant.RET_RADIO_RX {
-			return true
-		}
-	}
-	
-	return false
-}
 
 func (callInfo *CallInfo) handleInner() {
 	defer callInfo.wg.Done() // Signal completion when the function exits
