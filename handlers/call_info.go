@@ -456,6 +456,7 @@ func (callInfo *CallInfo) doOnRadioState(radioButtonState constant.RadioButtonSt
 			c := callInfo.getClient(j)
 			defer callInfo.updateClient(j, &c)
 			rtspState := c.rtspState
+			
 			if (radioButtonState == constant.TX_BUTTON_OFF && recorderType == constant.RET_RADIO_TX || radioButtonState == constant.RX_BUTTON_OFF && recorderType == constant.RET_RADIO_RX) && (int(rtspState) <= int(constant.RTSP_STATE_START) || rtspState == constant.RTSP_STATE_DISCONNECT || c.client.IsClose()) {
 				if c.client.IsClose() {
 					fmt.Println("\n\n\n\nDebug 1000: Client is closed, need to restart\n\n\n")
@@ -1007,6 +1008,7 @@ func (callInfo *CallInfo) cleanupResources() {
 
 	rtspClient.LogDebug("Cleanup completed for call name:", callInfo.Name)
 }
+
 
 func (callInfo *CallInfo) handleInner() {
 	defer callInfo.wg.Done() // Signal completion when the function exits
